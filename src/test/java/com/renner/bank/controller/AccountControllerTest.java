@@ -99,6 +99,7 @@ class AccountControllerTest {
                 .andExpect(jsonPath("$.content[0].name").value("Alice"));
     }
 
+    @Test
     void shouldReturnAccountById() throws Exception {
         UUID accountId = UUID.randomUUID();
         when(accountService.findById(accountId))
