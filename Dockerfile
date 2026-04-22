@@ -1,12 +1,9 @@
 FROM maven:3.9-eclipse-temurin-25 AS build
 WORKDIR /app
 COPY pom.xml .
-COPY .mvn ./.mvn
-COPY mvnw .
-RUN chmod +x mvnw
-RUN ./mvnw dependency:go-offline -q
+RUN mvn dependency:go-offline -q
 COPY src ./src
-RUN ./mvnw clean install
+RUN mvn clean install
 
 FROM eclipse-temurin:25-jre
 WORKDIR /app

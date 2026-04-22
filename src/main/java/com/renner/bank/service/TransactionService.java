@@ -57,9 +57,9 @@ public class TransactionService {
         this.accountService = accountService;
     }
 
-    public PaginatedResponse<TransactionResponse> getStatement(UUID accountId,
-                                                               Integer page,
-                                                               Integer size) {
+    public PaginatedResponse<TransactionResponse> getTransactionByAccountId(UUID accountId,
+                                                                            Integer page,
+                                                                            Integer size) {
         if (!accountService.existsById(accountId)) {
             throw new AccountNotFoundException(accountId);
         }

@@ -114,7 +114,7 @@ class AccountControllerIntegrationTest {
                                 new TransferRequest(source.getId(), destination.getId(), new BigDecimal("100.00")))))
                 .andExpect(status().isCreated());
 
-        mockMvc.perform(get("/accounts/{id}/statement", source.getId()))
+        mockMvc.perform(get("/accounts/{id}/transaction", source.getId()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalElements").value(1))
                 .andExpect(jsonPath("$.content[0].status").value("COMPLETED"))
@@ -125,7 +125,7 @@ class AccountControllerIntegrationTest {
     void shouldReturn404WhenStatementAccountDoesNotExist() throws Exception {
         UUID randomId = UUID.randomUUID();
 
-        mockMvc.perform(get("/accounts/{id}/statement", randomId))
+        mockMvc.perform(get("/accounts/{id}/transaction", randomId))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.detail").value("Account not found: " + randomId));
     }

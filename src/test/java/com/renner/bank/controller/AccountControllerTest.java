@@ -141,9 +141,9 @@ class AccountControllerTest {
                 0,
                 20
         );
-        when(accountService.getStatement(accountId, 0, 20)).thenReturn(response);
+        when(accountService.getTransactionByAccountId(accountId, 0, 20)).thenReturn(response);
 
-        mockMvc.perform(get("/accounts/{id}/statement", accountId))
+        mockMvc.perform(get("/accounts/{id}/transaction", accountId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].sourceAccountName").value("Alice"))
                 .andExpect(jsonPath("$.content[0].destinationAccountName").value("Bob"));
@@ -152,9 +152,9 @@ class AccountControllerTest {
     @Test
     void shouldReturnNotFoundWhenStatementAccountDoesNotExist() throws Exception {
         UUID accountId = UUID.randomUUID();
-        when(accountService.getStatement(accountId, 0, 20)).thenThrow(new AccountNotFoundException(accountId));
+        when(accountService.getTransactionByAccountId(accountId, 0, 20)).thenThrow(new AccountNotFoundException(accountId));
 
-        mockMvc.perform(get("/accounts/{id}/statement", accountId))
+        mockMvc.perform(get("/accounts/{id}/transaction", accountId))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.detail").value("Account not found: " + accountId));
     }

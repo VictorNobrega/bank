@@ -57,10 +57,10 @@ public class AccountService {
         return pageMapper.toPaginatedResponse(accountPage);
     }
 
-    public PaginatedResponse<TransactionResponse> getStatement(UUID accountId,
-                                                               Integer page,
-                                                               Integer size) {
-        return transactionService.getStatement(accountId, page, size);
+    public PaginatedResponse<TransactionResponse> getTransactionByAccountId(UUID accountId,
+                                                                            Integer page,
+                                                                            Integer size) {
+        return transactionService.getTransactionByAccountId(accountId, page, size);
     }
 
     public boolean existsById(UUID accountId) {

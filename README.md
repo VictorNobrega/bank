@@ -72,36 +72,9 @@ Com a aplicação rodando, acesse a documentação interativa:
 | POST   | `/api/v1/accounts`              | Criar conta                            |
 | GET    | `/api/v1/accounts`              | Listar contas (paginado, ordem por nome) |
 | GET    | `/api/v1/accounts/{id}`         | Buscar conta por ID                    |
-| GET    | `/api/v1/accounts/{id}/statement` | Extrato da conta (paginado)          |
+| GET    | `/api/v1/accounts/{id}/transaction` | Extrato da conta (paginado)        |
 | POST   | `/api/v1/transaction`           | Realizar transferência                 |
 | GET    | `/api/v1/transaction/{id}`      | Buscar transferência por ID            |
-
----
-
-## Como testar
-
-### Testes unitários e de integração
-
-```bash
-./mvnw test
-```
-
-Os testes de integração usam H2 em memória — nenhuma infraestrutura externa é necessária.
-
-### Cobertura por camada
-
-| Camada                          | Tipo          | Testes |
-|---------------------------------|---------------|--------|
-| `AccountDomainTest`             | Unitário      | Regras de negócio de debit/credit |
-| `AccountServiceTest`            | Unitário      | Lógica do serviço com mocks       |
-| `TransactionServiceTest`        | Unitário      | Lógica do serviço com mocks       |
-| `NotificationServiceTest`       | Unitário      | Chamada HTTP mockada              |
-| `AccountControllerTest`         | Unitário      | Camada web com MockMvc standalone |
-| `TransactionControllerTest`     | Unitário      | Camada web com MockMvc standalone |
-| `AccountServiceIntegrationTest` | Integração    | Service + H2 real                 |
-| `TransactionServiceIntegrationTest` | Integração | Service + H2 real                |
-| `AccountControllerIntegrationTest` | Integração  | Controller → Service → H2        |
-| `TransactionControllerIntegrationTest` | Integração | Controller → Service → H2     |
 
 ---
 

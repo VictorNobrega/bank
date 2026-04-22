@@ -111,7 +111,7 @@ class AccountServiceIntegrationTest {
         transactionService.transfer(new TransferRequest(source.getId(), destination.getId(), new BigDecimal("100.00")));
         transactionService.transfer(new TransferRequest(source.getId(), destination.getId(), new BigDecimal("50.00")));
 
-        PaginatedResponse<TransactionResponse> statement = accountService.getStatement(source.getId(), 0, 10);
+        PaginatedResponse<TransactionResponse> statement = accountService.getTransactionByAccountId(source.getId(), 0, 10);
 
         assertThat(statement.totalElements()).isEqualTo(2);
         assertThat(statement.content()).allMatch(tx -> tx.status().equals("COMPLETED"));

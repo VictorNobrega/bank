@@ -152,7 +152,7 @@ class TransactionServiceTest {
         when(pageMapper.toPaginatedResponse(org.mockito.ArgumentMatchers.<Page<TransactionResponse>>any()))
                 .thenReturn(paginatedResponse);
 
-        PaginatedResponse<TransactionResponse> response = transactionService.getStatement(sourceId, 0, 20);
+        PaginatedResponse<TransactionResponse> response = transactionService.getTransactionByAccountId(sourceId, 0, 20);
 
         assertThat(response.totalElements()).isEqualTo(1);
         assertThat(response.content()).singleElement().satisfies(item -> {
@@ -166,7 +166,7 @@ class TransactionServiceTest {
     void shouldThrowWhenStatementAccountDoesNotExist() {
         when(accountService.existsById(sourceId)).thenReturn(false);
 
-        assertThatThrownBy(() -> transactionService.getStatement(sourceId, 0, 20))
+        assertThatThrownBy(() -> transactionService.getTransactionByAccountId(sourceId, 0, 20))
                 .isInstanceOf(AccountNotFoundException.class)
                 .hasMessageContaining(sourceId.toString());
     }

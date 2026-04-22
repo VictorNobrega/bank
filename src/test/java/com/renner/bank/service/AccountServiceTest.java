@@ -139,12 +139,12 @@ class AccountServiceTest {
     @Test
     void shouldDelegateStatementLookupToTransferService() {
         PaginatedResponse<TransactionResponse> statementResponse = new PaginatedResponse<>(List.of(), 0, 0, 0, 0, 20);
-        when(transactionService.getStatement(accountId, 0, 20)).thenReturn(statementResponse);
+        when(transactionService.getTransactionByAccountId(accountId, 0, 20)).thenReturn(statementResponse);
 
-        PaginatedResponse<TransactionResponse> statement = accountService.getStatement(accountId, 0, 20);
+        PaginatedResponse<TransactionResponse> statement = accountService.getTransactionByAccountId(accountId, 0, 20);
 
         assertThat(statement).isSameAs(statementResponse);
-        verify(transactionService).getStatement(accountId, 0, 20);
+        verify(transactionService).getTransactionByAccountId(accountId, 0, 20);
     }
 
     @Test

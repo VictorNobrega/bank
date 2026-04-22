@@ -47,12 +47,12 @@ public class AccountController {
         return accountService.findById(id);
     }
 
-    @GetMapping("/{id}/statement")
+    @GetMapping("/{id}/transaction")
     @Operation(summary = "Get account statement (paginated transactions)",
             description = "A ordenação é feita pelo campo `createdAt` decrescente.")
-    public PaginatedResponse<TransactionResponse> getStatement(@PathVariable UUID id,
-                                                               @RequestParam(defaultValue = "0") @Min(0) Integer page,
-                                                               @RequestParam(defaultValue = "20") @Min(1) @Max(100) Integer size) {
-        return accountService.getStatement(id, page, size);
+    public PaginatedResponse<TransactionResponse> getTransactionByAccountId(@PathVariable UUID id,
+                                                                            @RequestParam(defaultValue = "0") @Min(0) Integer page,
+                                                                            @RequestParam(defaultValue = "20") @Min(1) @Max(100) Integer size) {
+        return accountService.getTransactionByAccountId(id, page, size);
     }
 }

@@ -108,8 +108,8 @@ class TransactionServiceIntegrationTest {
         transactionService.transfer(new TransferRequest(source.getId(), destination.getId(), new BigDecimal("100.00")));
         transactionService.transfer(new TransferRequest(source.getId(), destination.getId(), new BigDecimal("50.00")));
 
-        PaginatedResponse<TransactionResponse> page1 = transactionService.getStatement(source.getId(), 0, 1);
-        PaginatedResponse<TransactionResponse> page2 = transactionService.getStatement(source.getId(), 1, 1);
+        PaginatedResponse<TransactionResponse> page1 = transactionService.getTransactionByAccountId(source.getId(), 0, 1);
+        PaginatedResponse<TransactionResponse> page2 = transactionService.getTransactionByAccountId(source.getId(), 1, 1);
 
         assertThat(page1.totalElements()).isEqualTo(2);
         assertThat(page1.content()).hasSize(1);
