@@ -8,7 +8,7 @@ API REST para transferência de valores entre contas bancárias, com consistênc
 
 - Java 25
 - Maven 3.9+
-- Docker e Docker Compose
+- Docker e Docker Compose (inclui PostgreSQL e RabbitMQ)
 
 ---
 
@@ -16,7 +16,7 @@ API REST para transferência de valores entre contas bancárias, com consistênc
 
 ### Opção 1 — Docker Compose (recomendado)
 
-Sobe o banco de dados PostgreSQL e a aplicação juntos:
+Sobe o banco de dados PostgreSQL o broker e a aplicação juntos:
 
 ```bash
 docker compose up --build
@@ -24,11 +24,11 @@ docker compose up --build
 
 A API ficará disponível em `http://localhost:8080/api/v1`.
 
-### Opção 2 — Apenas o banco via Docker, aplicação local
+### Opção 2 — Apenas o banco e o broker via Docker, aplicação local
 
 ```bash
-# Sobe apenas o PostgreSQL
-docker compose up postgres -d
+# Sobe PostgreSQL e RabbitMQ
+docker compose up postgres rabbitmq -d
 
 # Executa a aplicação
 ./mvnw spring-boot:run
@@ -36,13 +36,23 @@ docker compose up postgres -d
 
 ### Variáveis de ambiente
 
-| Variável       | Padrão      | Descrição                        |
-|----------------|-------------|----------------------------------|
-| `DB_HOST`      | `localhost` | Host do banco de dados           |
-| `DB_PORT`      | `5432`      | Porta do PostgreSQL              |
-| `DB_NAME`      | `bankdb`    | Nome do banco                    |
-| `DB_USER`      | `bank`      | Usuário do banco                 |
-| `DB_PASSWORD`  | `bank`      | Senha do banco                   |
+| Variável            | Padrão      | Descrição                        |
+|---------------------|-------------|----------------------------------|
+| `DB_HOST`           | `localhost` | Host do banco de dados           |
+| `DB_PORT`           | `5432`      | Porta do PostgreSQL              |
+| `DB_NAME`           | `bankdb`    | Nome do banco                    |
+| `DB_USER`           | `bank`      | Usuário do banco                 |
+| `DB_PASSWORD`       | `bank`      | Senha do banco                   |
+| `RABBITMQ_HOST`     | `localhost` | Host do RabbitMQ                 |
+| `RABBITMQ_PORT`     | `5672`      | Porta AMQP do RabbitMQ           |
+| `RABBITMQ_USER`     | `guest`     | Usuário do RabbitMQ              |
+| `RABBITMQ_PASSWORD` | `guest`     | Senha do RabbitMQ                |
+
+### RabbitMQ Management
+
+Com o Docker Compose rodando, o painel de administração do RabbitMQ fica disponível em:
+
+**`http://localhost:15672`** (usuário: `guest` / senha: `guest`)
 
 ### Dados pré-carregados
 
@@ -84,22 +94,24 @@ Com a aplicação rodando, acesse a documentação interativa:
 
 Ao transferir entre duas contas, ambas precisam ser bloqueadas com `SELECT FOR UPDATE` (lock pessimista). Se dois threads tentarem transferir entre A↔B simultaneamente na ordem inversa, ocorre deadlock.
 
-A solução adotada é adquirir os locks sempre na **mesma ordem determinística** — comparando os UUIDs das contas e bloqueando sempre o menor UUID primeiro. Isso garante que, independentemente da direção da transferência, os locks são adquiridos na mesma sequência global, eliminando o deadlock.
+A solução adotada é adquirir os locks sempre na **mesma ordem: primeiro a conta de origem, depois a conta de destino**. A responsabilidade de evitar deadlock fica na camada de aplicação — toda transferência segue essa sequência, garantindo que não haja aquisição de locks em ordens opostas.
 
 ### Persistência de transações com falha
 
 Quando uma transferência falha (saldo insuficiente, conta inexistente, etc.), um registro com status `FAILED` é persistido para rastreabilidade. Como a transação principal já foi revertida pelo Spring, essa persistência usa `TransactionTemplate` com `PROPAGATION_REQUIRES_NEW` — abre uma nova transação independente que é commitada mesmo com o rollback da principal.
 
-### Notificações assíncronas e tolerantes a falha
+### Notificações via RabbitMQ
 
-O envio de notificação ocorre **após** a transferência ser confirmada, em thread separada (`@Async`). Um pool dedicado de threads (`notification-*`) isola esse processamento do fluxo principal. Falhas na notificação são capturadas e logadas sem propagar a exceção — a transferência já está commitada e não pode ser desfeita por uma falha de notificação.
+Após a confirmação de uma transferência, o `NotificationService` (producer) publica um evento na exchange `bank.notifications` com routing key `notification`. Um `NotificationConsumer` dedicado, escutando a fila `bank.notification.queue`, consome esse evento e realiza a chamada HTTP para o serviço externo de notificação.
+
+Essa separação desacopla o fluxo de transferência da notificação: falhas HTTP no consumer não afetam a transação já commitada. O consumer trata exceções localmente e registra o erro no log sem propagá-lo.
 
 ### Separação de responsabilidades no serviço de transferência
 
 O método `transfer` foi estruturado como um **orquestrador** de etapas privadas com responsabilidades únicas:
 
 - `validateDistinctAccounts` — guarda contra transferência para a mesma conta
-- `resolveAccountsWithDeadlockSafeLocking` — aquisição de locks em ordem determinística
+- `findAccountWithLock` — aquisição de locks na ordem origem → destino
 - `applyFundsTransfer` — validação de saldo e mutação das entidades
 - `persistCompletedTransaction` — persistência do registro e log
 - `notifyTransferParticipants` — disparo da notificação

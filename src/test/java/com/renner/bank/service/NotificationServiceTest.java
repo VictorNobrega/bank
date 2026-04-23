@@ -1,26 +1,30 @@
 package com.renner.bank.service;
 
+import com.renner.bank.dto.NotificationRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpMethod;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.amqp.AmqpException;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.test.web.client.MockRestServiceServer;
-import org.springframework.web.client.RestClient;
 
 import java.math.BigDecimal;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.withServerError;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 
+@ExtendWith(MockitoExtension.class)
 class NotificationServiceTest {
 
-    private static final String NOTIFICATION_URL = "https://util.devi.tools/api/v1/notify";
+    @Mock
+    private RabbitTemplate rabbitTemplate;
 
-    private MockRestServiceServer server;
     private NotificationService notificationService;
 
     private final UUID sourceId = UUID.randomUUID();
@@ -29,30 +33,24 @@ class NotificationServiceTest {
 
     @BeforeEach
     void setUp() {
-        var builder = RestClient.builder();
-        server = MockRestServiceServer.bindTo(builder).build();
-        var restClient = builder.build();
-        notificationService = new NotificationService(restClient);
-        ReflectionTestUtils.setField(notificationService, "notificationUrl", NOTIFICATION_URL);
+        notificationService = new NotificationService(rabbitTemplate);
+        ReflectionTestUtils.setField(notificationService, "exchange", "bank.notifications");
+        ReflectionTestUtils.setField(notificationService, "routingKey", "notification");
     }
 
     @Test
-    void shouldSendNotificationSuccessfully() {
-        server.expect(requestTo(NOTIFICATION_URL))
-                .andExpect(method(HttpMethod.POST))
-                .andRespond(withSuccess());
+    void shouldPublishNotificationSuccessfully() {
+        var expected = new NotificationRequest(sourceId, "Alice", destinationId, "Bob", amount);
 
-        assertThatCode(() ->
-                notificationService.notify(sourceId, "Alice", destinationId, "Bob", amount)
-        ).doesNotThrowAnyException();
+        notificationService.notify(sourceId, "Alice", destinationId, "Bob", amount);
 
-        server.verify();
+        verify(rabbitTemplate).convertAndSend("bank.notifications", "notification", expected);
     }
 
     @Test
-    void shouldNotPropagateExceptionWhenNotificationFails() {
-        server.expect(requestTo(NOTIFICATION_URL))
-                .andRespond(withServerError());
+    void shouldNotPropagateExceptionWhenPublishFails() {
+        doThrow(new AmqpException("connection failed"))
+                .when(rabbitTemplate).convertAndSend(anyString(), anyString(), any(Object.class));
 
         assertThatCode(() ->
                 notificationService.notify(sourceId, "Alice", destinationId, "Bob", amount)

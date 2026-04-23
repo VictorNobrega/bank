@@ -87,14 +87,8 @@ public class TransactionService {
         try {
             validateDistinctAccounts(sourceId, destinationId);
 
-            var firstId = sourceId.compareTo(destinationId) < 0 ? sourceId : destinationId;
-            var secondId = sourceId.compareTo(destinationId) < 0 ? destinationId : sourceId;
-
-            var first = findAccountWithLock(firstId);
-            var second = findAccountWithLock(secondId);
-
-            source = firstId.equals(sourceId) ? first : second;
-            destination = firstId.equals(destinationId) ? first : second;
+            source = findAccountWithLock(sourceId);
+            destination = findAccountWithLock(destinationId);
 
             applyFundsTransfer(source, destination, request.amount());
 

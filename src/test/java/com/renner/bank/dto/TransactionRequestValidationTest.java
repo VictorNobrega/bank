@@ -11,7 +11,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class TransferRequestValidationTest {
+class TransactionRequestValidationTest {
 
     private static Validator validator;
 
