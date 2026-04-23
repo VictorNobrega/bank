@@ -15,7 +15,6 @@ import com.renner.bank.mapper.TransactionMapper;
 import com.renner.bank.repository.TransactionRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.Page;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -65,7 +64,7 @@ public class TransactionService {
         }
 
         var pageable = pageMapper.buildPagination(page, size);
-        Page<TransactionResponse> statementPage = transactionRepository.findByAccountId(accountId, pageable)
+        var statementPage = transactionRepository.findByAccountId(accountId, pageable)
                 .map(transactionMapper::toResponse);
         return pageMapper.toPaginatedResponse(statementPage);
     }
@@ -78,8 +77,8 @@ public class TransactionService {
 
     @Transactional
     public TransactionResponse transfer(TransferRequest request) {
-        UUID sourceId      = request.sourceAccountId();
-        UUID destinationId = request.destinationAccountId();
+        var sourceId = request.sourceAccountId();
+        var destinationId = request.destinationAccountId();
         Account source      = null;
         Account destination = null;
 
@@ -88,18 +87,18 @@ public class TransactionService {
         try {
             validateDistinctAccounts(sourceId, destinationId);
 
-            UUID firstId = sourceId.compareTo(destinationId) < 0 ? sourceId : destinationId;
-            UUID secondId = sourceId.compareTo(destinationId) < 0 ? destinationId : sourceId;
+            var firstId = sourceId.compareTo(destinationId) < 0 ? sourceId : destinationId;
+            var secondId = sourceId.compareTo(destinationId) < 0 ? destinationId : sourceId;
 
-            Account first = findAccountWithLock(firstId);
-            Account second = findAccountWithLock(secondId);
+            var first = findAccountWithLock(firstId);
+            var second = findAccountWithLock(secondId);
 
             source = firstId.equals(sourceId) ? first : second;
             destination = firstId.equals(destinationId) ? first : second;
 
             applyFundsTransfer(source, destination, request.amount());
 
-            Transaction transaction = persistCompletedTransaction(source, destination, request.amount());
+            var transaction = persistCompletedTransaction(source, destination, request.amount());
 
             notifyTransferParticipants(source, destination, request.amount());
 
@@ -125,7 +124,7 @@ public class TransactionService {
     }
 
     private Transaction persistCompletedTransaction(Account source, Account destination, BigDecimal amount) {
-        Transaction transaction = transactionMapper.createTransaction(
+        var transaction = transactionMapper.createTransaction(
                 source,
                 destination,
                 amount,
@@ -153,7 +152,7 @@ public class TransactionService {
                 return null;
             }
 
-            Transaction failed = transactionMapper.createTransaction(
+            var failed = transactionMapper.createTransaction(
                     source,
                     destination,
                     amount,

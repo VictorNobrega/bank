@@ -4,8 +4,6 @@ import com.renner.bank.domain.Account;
 import com.renner.bank.dto.AccountRequest;
 import com.renner.bank.dto.AccountResponse;
 import com.renner.bank.dto.TransferRequest;
-import com.renner.bank.dto.TransactionResponse;
-import com.renner.bank.dto.pagination.PaginatedResponse;
 import com.renner.bank.exception.AccountNotFoundException;
 import com.renner.bank.repository.AccountRepository;
 import com.renner.bank.repository.TransactionRepository;
@@ -40,7 +38,7 @@ class AccountServiceIntegrationTest {
 
     @Test
     void shouldCreateAndPersistAccount() {
-        AccountResponse response = accountService.create(new AccountRequest("Alice", new BigDecimal("1000.00")));
+        var response = accountService.create(new AccountRequest("Alice", new BigDecimal("1000.00")));
 
         assertThat(response.id()).isNotNull();
         assertThat(response.name()).isEqualTo("Alice");
@@ -50,9 +48,9 @@ class AccountServiceIntegrationTest {
 
     @Test
     void shouldFindAccountById() {
-        AccountResponse created = accountService.create(new AccountRequest("Bob", new BigDecimal("500.00")));
+        var created = accountService.create(new AccountRequest("Bob", new BigDecimal("500.00")));
 
-        AccountResponse found = accountService.findById(created.id());
+        var found = accountService.findById(created.id());
 
         assertThat(found.id()).isEqualTo(created.id());
         assertThat(found.name()).isEqualTo("Bob");
@@ -61,7 +59,7 @@ class AccountServiceIntegrationTest {
 
     @Test
     void shouldThrowWhenAccountNotFound() {
-        UUID randomId = UUID.randomUUID();
+        var randomId = UUID.randomUUID();
         assertThatThrownBy(() -> accountService.findById(randomId))
                 .isInstanceOf(AccountNotFoundException.class)
                 .hasMessageContaining(randomId.toString());
@@ -73,7 +71,7 @@ class AccountServiceIntegrationTest {
         accountService.create(new AccountRequest("Alice", new BigDecimal("200.00")));
         accountService.create(new AccountRequest("Marco", new BigDecimal("300.00")));
 
-        PaginatedResponse<AccountResponse> response = accountService.findAll(0, 20);
+        var response = accountService.findAll(0, 20);
 
         assertThat(response.totalElements()).isEqualTo(3);
         assertThat(response.content()).extracting(AccountResponse::name)
@@ -86,8 +84,8 @@ class AccountServiceIntegrationTest {
         accountService.create(new AccountRequest("Bob", new BigDecimal("200.00")));
         accountService.create(new AccountRequest("Carla", new BigDecimal("300.00")));
 
-        PaginatedResponse<AccountResponse> page1 = accountService.findAll(0, 2);
-        PaginatedResponse<AccountResponse> page2 = accountService.findAll(1, 2);
+        var page1 = accountService.findAll(0, 2);
+        var page2 = accountService.findAll(1, 2);
 
         assertThat(page1.content()).hasSize(2);
         assertThat(page1.totalElements()).isEqualTo(3);
@@ -97,7 +95,7 @@ class AccountServiceIntegrationTest {
 
     @Test
     void shouldCheckExistenceById() {
-        AccountResponse created = accountService.create(new AccountRequest("Carla", new BigDecimal("100.00")));
+        var created = accountService.create(new AccountRequest("Carla", new BigDecimal("100.00")));
 
         assertThat(accountService.existsById(created.id())).isTrue();
         assertThat(accountService.existsById(UUID.randomUUID())).isFalse();
@@ -105,13 +103,13 @@ class AccountServiceIntegrationTest {
 
     @Test
     void shouldReturnStatementForAccount() {
-        Account source = accountRepository.save(new Account("Alice", new BigDecimal("1000.00")));
-        Account destination = accountRepository.save(new Account("Bob", new BigDecimal("500.00")));
+        var source = accountRepository.save(new Account("Alice", new BigDecimal("1000.00")));
+        var destination = accountRepository.save(new Account("Bob", new BigDecimal("500.00")));
 
         transactionService.transfer(new TransferRequest(source.getId(), destination.getId(), new BigDecimal("100.00")));
         transactionService.transfer(new TransferRequest(source.getId(), destination.getId(), new BigDecimal("50.00")));
 
-        PaginatedResponse<TransactionResponse> statement = accountService.getTransactionByAccountId(source.getId(), 0, 10);
+        var statement = accountService.getTransactionByAccountId(source.getId(), 0, 10);
 
         assertThat(statement.totalElements()).isEqualTo(2);
         assertThat(statement.content()).allMatch(tx -> tx.status().equals("COMPLETED"));

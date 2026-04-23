@@ -29,9 +29,9 @@ class NotificationServiceTest {
 
     @BeforeEach
     void setUp() {
-        RestClient.Builder builder = RestClient.builder();
+        var builder = RestClient.builder();
         server = MockRestServiceServer.bindTo(builder).build();
-        RestClient restClient = builder.build();
+        var restClient = builder.build();
         notificationService = new NotificationService(restClient);
         ReflectionTestUtils.setField(notificationService, "notificationUrl", NOTIFICATION_URL);
     }

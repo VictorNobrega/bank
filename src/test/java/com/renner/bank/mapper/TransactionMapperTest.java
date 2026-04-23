@@ -3,7 +3,6 @@ package com.renner.bank.mapper;
 import com.renner.bank.domain.Account;
 import com.renner.bank.domain.Transaction;
 import com.renner.bank.domain.TransactionStatus;
-import com.renner.bank.dto.TransactionResponse;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -18,10 +17,10 @@ class TransactionMapperTest {
 
     @Test
     void shouldCreateTransaction() {
-        Account source = new Account("Alice", new BigDecimal("1000.00"));
-        Account destination = new Account("Bob", new BigDecimal("500.00"));
+        var source = new Account("Alice", new BigDecimal("1000.00"));
+        var destination = new Account("Bob", new BigDecimal("500.00"));
 
-        Transaction transaction = transactionMapper.createTransaction(
+        var transaction = transactionMapper.createTransaction(
                 source,
                 destination,
                 new BigDecimal("100.00"),
@@ -37,17 +36,17 @@ class TransactionMapperTest {
 
     @Test
     void shouldMapTransactionToResponse() {
-        UUID sourceId = UUID.randomUUID();
-        UUID destinationId = UUID.randomUUID();
-        UUID transactionId = UUID.randomUUID();
-        LocalDateTime createdAt = LocalDateTime.now();
+        var sourceId = UUID.randomUUID();
+        var destinationId = UUID.randomUUID();
+        var transactionId = UUID.randomUUID();
+        var createdAt = LocalDateTime.now();
 
-        Account source = new Account("Alice", new BigDecimal("1000.00"));
+        var source = new Account("Alice", new BigDecimal("1000.00"));
         source.setId(sourceId);
-        Account destination = new Account("Bob", new BigDecimal("500.00"));
+        var destination = new Account("Bob", new BigDecimal("500.00"));
         destination.setId(destinationId);
 
-        Transaction transaction = new Transaction(
+        var transaction = new Transaction(
                 source,
                 destination,
                 new BigDecimal("100.00"),
@@ -63,7 +62,7 @@ class TransactionMapperTest {
             throw new RuntimeException(ex);
         }
 
-        TransactionResponse response = transactionMapper.toResponse(transaction);
+        var response = transactionMapper.toResponse(transaction);
 
         assertThat(response.transactionId()).isEqualTo(transactionId);
         assertThat(response.sourceAccountId()).isEqualTo(sourceId);

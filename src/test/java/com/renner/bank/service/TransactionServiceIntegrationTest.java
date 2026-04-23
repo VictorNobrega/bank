@@ -3,8 +3,6 @@ package com.renner.bank.service;
 import com.renner.bank.domain.Account;
 import com.renner.bank.domain.TransactionStatus;
 import com.renner.bank.dto.TransferRequest;
-import com.renner.bank.dto.TransactionResponse;
-import com.renner.bank.dto.pagination.PaginatedResponse;
 import com.renner.bank.exception.AccountNotFoundException;
 import com.renner.bank.exception.InsufficientFundsException;
 import com.renner.bank.exception.TransferNotFoundException;
@@ -48,15 +46,15 @@ class TransactionServiceIntegrationTest {
 
     @Test
     void shouldTransferAndPersistBalanceChanges() {
-        TransactionResponse response = transactionService.transfer(
+        var response = transactionService.transfer(
                 new TransferRequest(source.getId(), destination.getId(), new BigDecimal("200.00")));
 
         assertThat(response.status()).isEqualTo("COMPLETED");
         assertThat(response.amount()).isEqualByComparingTo("200.00");
         assertThat(response.transactionId()).isNotNull();
 
-        Account updatedSource = accountRepository.findById(source.getId()).orElseThrow();
-        Account updatedDestination = accountRepository.findById(destination.getId()).orElseThrow();
+        var updatedSource = accountRepository.findById(source.getId()).orElseThrow();
+        var updatedDestination = accountRepository.findById(destination.getId()).orElseThrow();
 
         assertThat(updatedSource.getBalance()).isEqualByComparingTo("800.00");
         assertThat(updatedDestination.getBalance()).isEqualByComparingTo("700.00");
@@ -72,7 +70,7 @@ class TransactionServiceIntegrationTest {
                 new TransferRequest(source.getId(), destination.getId(), new BigDecimal("5000.00"))))
                 .isInstanceOf(InsufficientFundsException.class);
 
-        Account updatedSource = accountRepository.findById(source.getId()).orElseThrow();
+        var updatedSource = accountRepository.findById(source.getId()).orElseThrow();
         assertThat(updatedSource.getBalance()).isEqualByComparingTo("1000.00");
 
         assertThat(transactionRepository.count()).isEqualTo(1);
@@ -93,7 +91,7 @@ class TransactionServiceIntegrationTest {
 
     @Test
     void shouldThrowWhenSourceAccountNotFound() {
-        UUID unknownId = UUID.randomUUID();
+        var unknownId = UUID.randomUUID();
         assertThatThrownBy(() -> transactionService.transfer(
                 new TransferRequest(unknownId, destination.getId(), new BigDecimal("100.00"))))
                 .isInstanceOf(AccountNotFoundException.class)
@@ -108,8 +106,8 @@ class TransactionServiceIntegrationTest {
         transactionService.transfer(new TransferRequest(source.getId(), destination.getId(), new BigDecimal("100.00")));
         transactionService.transfer(new TransferRequest(source.getId(), destination.getId(), new BigDecimal("50.00")));
 
-        PaginatedResponse<TransactionResponse> page1 = transactionService.getTransactionByAccountId(source.getId(), 0, 1);
-        PaginatedResponse<TransactionResponse> page2 = transactionService.getTransactionByAccountId(source.getId(), 1, 1);
+        var page1 = transactionService.getTransactionByAccountId(source.getId(), 0, 1);
+        var page2 = transactionService.getTransactionByAccountId(source.getId(), 1, 1);
 
         assertThat(page1.totalElements()).isEqualTo(2);
         assertThat(page1.content()).hasSize(1);
@@ -118,10 +116,10 @@ class TransactionServiceIntegrationTest {
 
     @Test
     void shouldFindTransactionById() {
-        TransactionResponse created = transactionService.transfer(
+        var created = transactionService.transfer(
                 new TransferRequest(source.getId(), destination.getId(), new BigDecimal("100.00")));
 
-        TransactionResponse found = transactionService.findById(created.transactionId());
+        var found = transactionService.findById(created.transactionId());
 
         assertThat(found.transactionId()).isEqualTo(created.transactionId());
         assertThat(found.amount()).isEqualByComparingTo("100.00");
@@ -132,7 +130,7 @@ class TransactionServiceIntegrationTest {
 
     @Test
     void shouldThrowWhenTransactionNotFound() {
-        UUID randomId = UUID.randomUUID();
+        var randomId = UUID.randomUUID();
         assertThatThrownBy(() -> transactionService.findById(randomId))
                 .isInstanceOf(TransferNotFoundException.class)
                 .hasMessageContaining(randomId.toString());

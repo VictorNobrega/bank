@@ -79,15 +79,15 @@ class TransactionServiceTest {
 
     @Test
     void shouldTransferSuccessfully() {
-        TransferRequest request = new TransferRequest(sourceId, destinationId, new BigDecimal("200.00"));
-        Transaction createdTransaction = new Transaction(
+        var request = new TransferRequest(sourceId, destinationId, new BigDecimal("200.00"));
+        var createdTransaction = new Transaction(
                 source,
                 destination,
                 new BigDecimal("200.00"),
                 TransactionStatus.COMPLETED,
                 LocalDateTime.now()
         );
-        TransactionResponse mappedResponse = new TransactionResponse(
+        var mappedResponse = new TransactionResponse(
                 UUID.randomUUID(),
                 sourceId,
                 "Alice",
@@ -104,7 +104,7 @@ class TransactionServiceTest {
         when(transactionRepository.save(createdTransaction)).thenReturn(createdTransaction);
         when(transactionMapper.toResponse(createdTransaction)).thenReturn(mappedResponse);
 
-        TransactionResponse response = transactionService.transfer(request);
+        var response = transactionService.transfer(request);
 
         assertThat(response.sourceAccountId()).isEqualTo(sourceId);
         assertThat(response.destinationAccountId()).isEqualTo(destinationId);
@@ -117,16 +117,16 @@ class TransactionServiceTest {
 
     @Test
     void shouldReturnStatementWhenAccountExists() {
-        PageRequest pageable = PageRequest.of(0, 20);
-        Transaction transaction = new Transaction(
+        var pageable = PageRequest.of(0, 20);
+        var transaction = new Transaction(
                 source,
                 destination,
                 new BigDecimal("150.00"),
                 TransactionStatus.COMPLETED,
                 LocalDateTime.now()
         );
-        PageImpl<Transaction> page = new PageImpl<>(List.of(transaction), pageable, 1);
-        TransactionResponse mappedResponse = new TransactionResponse(
+        var page = new PageImpl<>(List.of(transaction), pageable, 1);
+        var mappedResponse = new TransactionResponse(
                 UUID.randomUUID(),
                 sourceId,
                 "Alice",
@@ -136,7 +136,7 @@ class TransactionServiceTest {
                 "COMPLETED",
                 transaction.getCreatedAt()
         );
-        PaginatedResponse<TransactionResponse> paginatedResponse = new PaginatedResponse<>(
+        var paginatedResponse = new PaginatedResponse<>(
                 List.of(mappedResponse),
                 1,
                 1,
@@ -152,7 +152,7 @@ class TransactionServiceTest {
         when(pageMapper.toPaginatedResponse(org.mockito.ArgumentMatchers.<Page<TransactionResponse>>any()))
                 .thenReturn(paginatedResponse);
 
-        PaginatedResponse<TransactionResponse> response = transactionService.getTransactionByAccountId(sourceId, 0, 20);
+        var response = transactionService.getTransactionByAccountId(sourceId, 0, 20);
 
         assertThat(response.totalElements()).isEqualTo(1);
         assertThat(response.content()).singleElement().satisfies(item -> {
@@ -173,15 +173,15 @@ class TransactionServiceTest {
 
     @Test
     void shouldFindTransferById() {
-        UUID transferId = UUID.randomUUID();
-        Transaction transaction = new Transaction(
+        var transferId = UUID.randomUUID();
+        var transaction = new Transaction(
                 source,
                 destination,
                 new BigDecimal("200.00"),
                 TransactionStatus.COMPLETED,
                 LocalDateTime.now()
         );
-        TransactionResponse mappedResponse = new TransactionResponse(
+        var mappedResponse = new TransactionResponse(
                 transferId,
                 sourceId,
                 "Alice",
@@ -195,7 +195,7 @@ class TransactionServiceTest {
         when(transactionRepository.findById(transferId)).thenReturn(Optional.of(transaction));
         when(transactionMapper.toResponse(transaction)).thenReturn(mappedResponse);
 
-        TransactionResponse response = transactionService.findById(transferId);
+        var response = transactionService.findById(transferId);
 
         assertThat(response.sourceAccountId()).isEqualTo(sourceId);
         assertThat(response.sourceAccountName()).isEqualTo("Alice");
@@ -206,7 +206,7 @@ class TransactionServiceTest {
 
     @Test
     void shouldThrowWhenTransferNotFound() {
-        UUID transferId = UUID.randomUUID();
+        var transferId = UUID.randomUUID();
         when(transactionRepository.findById(transferId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> transactionService.findById(transferId))
@@ -216,8 +216,8 @@ class TransactionServiceTest {
 
     @Test
     void shouldThrowOnInsufficientFundsAndPersistFailedTransaction() {
-        TransferRequest request = new TransferRequest(sourceId, destinationId, new BigDecimal("5000.00"));
-        Transaction failedTransaction = new Transaction(
+        var request = new TransferRequest(sourceId, destinationId, new BigDecimal("5000.00"));
+        var failedTransaction = new Transaction(
                 source,
                 destination,
                 new BigDecimal("5000.00"),
@@ -243,7 +243,7 @@ class TransactionServiceTest {
 
     @Test
     void shouldThrowOnTransferToSameAccountAndPersistFailedTransaction() {
-        TransferRequest request = new TransferRequest(sourceId, sourceId, new BigDecimal("100.00"));
+        var request = new TransferRequest(sourceId, sourceId, new BigDecimal("100.00"));
         when(transactionManager.getTransaction(any(TransactionDefinition.class))).thenReturn(new SimpleTransactionStatus());
 
         assertThatThrownBy(() -> transactionService.transfer(request))
@@ -255,7 +255,7 @@ class TransactionServiceTest {
 
     @Test
     void shouldThrowWhenSourceAccountNotFound() {
-        TransferRequest request = new TransferRequest(sourceId, destinationId, new BigDecimal("100.00"));
+        var request = new TransferRequest(sourceId, destinationId, new BigDecimal("100.00"));
         when(transactionManager.getTransaction(any(TransactionDefinition.class))).thenReturn(new SimpleTransactionStatus());
         when(accountService.findByIdWithLock(sourceId)).thenThrow(new AccountNotFoundException(sourceId));
 
@@ -269,7 +269,7 @@ class TransactionServiceTest {
 
     @Test
     void shouldThrowWhenDestinationAccountNotFound() {
-        TransferRequest request = new TransferRequest(sourceId, destinationId, new BigDecimal("100.00"));
+        var request = new TransferRequest(sourceId, destinationId, new BigDecimal("100.00"));
         when(transactionManager.getTransaction(any(TransactionDefinition.class))).thenReturn(new SimpleTransactionStatus());
         when(accountService.findByIdWithLock(sourceId)).thenReturn(source);
         when(accountService.findByIdWithLock(destinationId)).thenThrow(new AccountNotFoundException(destinationId));

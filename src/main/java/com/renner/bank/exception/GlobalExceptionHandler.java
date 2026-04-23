@@ -8,7 +8,6 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -46,12 +45,12 @@ public class GlobalExceptionHandler {
     }
 
     private ProblemDetail buildValidationProblem(java.util.List<FieldError> fieldErrors) {
-        Map<String, String> errors = fieldErrors.stream()
+        var errors = fieldErrors.stream()
                 .collect(Collectors.toMap(FieldError::getField, f -> {
-                    String msg = f.getDefaultMessage();
+                    var msg = f.getDefaultMessage();
                     return Objects.isNull(msg) ? "invalid" : msg;
                 }, (a, b) -> a));
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Validation failed");
+        var problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Validation failed");
         problem.setProperty("errors", errors);
         return problem;
     }

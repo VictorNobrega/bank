@@ -3,12 +3,10 @@ package com.renner.bank.dto;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
-import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
-import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -19,15 +17,15 @@ class TransferRequestValidationTest {
 
     @BeforeAll
     static void setUp() {
-        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        var factory = Validation.buildDefaultValidatorFactory();
         validator = factory.getValidator();
     }
 
     @Test
     void shouldReturnCustomMessageWhenSourceAccountIdIsNull() {
-        TransferRequest request = new TransferRequest(null, UUID.randomUUID(), new BigDecimal("100.00"));
+        var request = new TransferRequest(null, UUID.randomUUID(), new BigDecimal("100.00"));
 
-        Set<ConstraintViolation<TransferRequest>> violations = validator.validate(request);
+        var violations = validator.validate(request);
 
         assertThat(violations)
                 .extracting(ConstraintViolation::getMessage)
@@ -36,9 +34,9 @@ class TransferRequestValidationTest {
 
     @Test
     void shouldReturnCustomMessageWhenDestinationAccountIdIsNull() {
-        TransferRequest request = new TransferRequest(UUID.randomUUID(), null, new BigDecimal("100.00"));
+        var request = new TransferRequest(UUID.randomUUID(), null, new BigDecimal("100.00"));
 
-        Set<ConstraintViolation<TransferRequest>> violations = validator.validate(request);
+        var violations = validator.validate(request);
 
         assertThat(violations)
                 .extracting(ConstraintViolation::getMessage)
@@ -47,9 +45,9 @@ class TransferRequestValidationTest {
 
     @Test
     void shouldReturnCustomMessageWhenAmountIsNull() {
-        TransferRequest request = new TransferRequest(UUID.randomUUID(), UUID.randomUUID(), null);
+        var request = new TransferRequest(UUID.randomUUID(), UUID.randomUUID(), null);
 
-        Set<ConstraintViolation<TransferRequest>> violations = validator.validate(request);
+        var violations = validator.validate(request);
 
         assertThat(violations)
                 .extracting(ConstraintViolation::getMessage)
@@ -58,9 +56,9 @@ class TransferRequestValidationTest {
 
     @Test
     void shouldReturnCustomMessageWhenAmountIsBelowMinimum() {
-        TransferRequest request = new TransferRequest(UUID.randomUUID(), UUID.randomUUID(), BigDecimal.ZERO);
+        var request = new TransferRequest(UUID.randomUUID(), UUID.randomUUID(), BigDecimal.ZERO);
 
-        Set<ConstraintViolation<TransferRequest>> violations = validator.validate(request);
+        var violations = validator.validate(request);
 
         assertThat(violations)
                 .extracting(ConstraintViolation::getMessage)

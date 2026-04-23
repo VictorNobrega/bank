@@ -9,7 +9,6 @@ import com.renner.bank.exception.AccountNotFoundException;
 import com.renner.bank.mapper.AccountMapper;
 import com.renner.bank.mapper.PageMapper;
 import com.renner.bank.repository.AccountRepository;
-import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,7 +34,7 @@ public class AccountService {
 
     @Transactional
     public AccountResponse create(AccountRequest request) {
-        Account account = new Account(request.name(), request.initialBalance());
+        var account = new Account(request.name(), request.initialBalance());
         return accountMapper.toResponse(accountRepository.save(account));
     }
 
@@ -52,7 +51,7 @@ public class AccountService {
 
     public PaginatedResponse<AccountResponse> findAll(Integer page, Integer size) {
         var pageable = pageMapper.buildPagination(page, size);
-        Page<AccountResponse> accountPage = accountRepository.findAllByOrderByNameAsc(pageable)
+        var accountPage = accountRepository.findAllByOrderByNameAsc(pageable)
                 .map(accountMapper::toResponse);
         return pageMapper.toPaginatedResponse(accountPage);
     }

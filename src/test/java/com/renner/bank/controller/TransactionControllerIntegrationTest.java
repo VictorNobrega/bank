@@ -50,7 +50,7 @@ class TransactionControllerIntegrationTest {
 
     @Test
     void shouldTransferSuccessfullyAndReturn201() throws Exception {
-        TransferRequest request = new TransferRequest(source.getId(), destination.getId(), new BigDecimal("200.00"));
+        var request = new TransferRequest(source.getId(), destination.getId(), new BigDecimal("200.00"));
 
         mockMvc.perform(post("/transaction")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -65,7 +65,7 @@ class TransactionControllerIntegrationTest {
 
     @Test
     void shouldReturn422OnInsufficientFunds() throws Exception {
-        TransferRequest request = new TransferRequest(source.getId(), destination.getId(), new BigDecimal("9999.00"));
+        var request = new TransferRequest(source.getId(), destination.getId(), new BigDecimal("9999.00"));
 
         mockMvc.perform(post("/transaction")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -77,7 +77,7 @@ class TransactionControllerIntegrationTest {
 
     @Test
     void shouldReturn400OnSameAccountTransfer() throws Exception {
-        TransferRequest request = new TransferRequest(source.getId(), source.getId(), new BigDecimal("100.00"));
+        var request = new TransferRequest(source.getId(), source.getId(), new BigDecimal("100.00"));
 
         mockMvc.perform(post("/transaction")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -88,8 +88,8 @@ class TransactionControllerIntegrationTest {
 
     @Test
     void shouldReturn404WhenAccountNotFound() throws Exception {
-        UUID unknownId = UUID.randomUUID();
-        TransferRequest request = new TransferRequest(unknownId, destination.getId(), new BigDecimal("100.00"));
+        var unknownId = UUID.randomUUID();
+        var request = new TransferRequest(unknownId, destination.getId(), new BigDecimal("100.00"));
 
         mockMvc.perform(post("/transaction")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -113,14 +113,14 @@ class TransactionControllerIntegrationTest {
 
     @Test
     void shouldReturnTransactionById() throws Exception {
-        TransferRequest request = new TransferRequest(source.getId(), destination.getId(), new BigDecimal("100.00"));
-        String responseJson = mockMvc.perform(post("/transaction")
+        var request = new TransferRequest(source.getId(), destination.getId(), new BigDecimal("100.00"));
+        var responseJson = mockMvc.perform(post("/transaction")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
 
-        String transactionId = objectMapper.readTree(responseJson).get("transactionId").asText();
+        var transactionId = objectMapper.readTree(responseJson).get("transactionId").asText();
 
         mockMvc.perform(get("/transaction/{id}", transactionId))
                 .andExpect(status().isOk())
@@ -131,7 +131,7 @@ class TransactionControllerIntegrationTest {
 
     @Test
     void shouldReturn404WhenTransactionNotFound() throws Exception {
-        UUID randomId = UUID.randomUUID();
+        var randomId = UUID.randomUUID();
 
         mockMvc.perform(get("/transaction/{id}", randomId))
                 .andExpect(status().isNotFound())

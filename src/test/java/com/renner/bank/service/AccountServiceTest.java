@@ -50,12 +50,12 @@ class AccountServiceTest {
 
     @Test
     void shouldCreateAccount() {
-        AccountRequest request = new AccountRequest("João Silva", new BigDecimal("1000.00"));
-        AccountResponse mappedResponse = new AccountResponse(accountId, "João Silva", new BigDecimal("1000.00"));
+        var request = new AccountRequest("João Silva", new BigDecimal("1000.00"));
+        var mappedResponse = new AccountResponse(accountId, "João Silva", new BigDecimal("1000.00"));
         when(accountRepository.save(any(Account.class))).thenReturn(account);
         when(accountMapper.toResponse(account)).thenReturn(mappedResponse);
 
-        AccountResponse response = accountService.create(request);
+        var response = accountService.create(request);
 
         assertThat(response.name()).isEqualTo("João Silva");
         assertThat(response.balance()).isEqualByComparingTo("1000.00");
@@ -64,11 +64,11 @@ class AccountServiceTest {
 
     @Test
     void shouldFindAccountById() {
-        AccountResponse mappedResponse = new AccountResponse(accountId, "João Silva", new BigDecimal("1000.00"));
+        var mappedResponse = new AccountResponse(accountId, "João Silva", new BigDecimal("1000.00"));
         when(accountRepository.findById(accountId)).thenReturn(Optional.of(account));
         when(accountMapper.toResponse(account)).thenReturn(mappedResponse);
 
-        AccountResponse response = accountService.findById(accountId);
+        var response = accountService.findById(accountId);
 
         assertThat(response.id()).isEqualTo(accountId);
         assertThat(response.name()).isEqualTo("João Silva");
@@ -87,7 +87,7 @@ class AccountServiceTest {
     void shouldFindAccountByIdWithLock() {
         when(accountRepository.findByIdWithLock(accountId)).thenReturn(Optional.of(account));
 
-        Account response = accountService.findByIdWithLock(accountId);
+        var response = accountService.findByIdWithLock(accountId);
 
         assertThat(response).isSameAs(account);
     }
@@ -103,11 +103,11 @@ class AccountServiceTest {
 
     @Test
     void shouldListAllAccounts() {
-        Account another = new Account("Maria Costa", new BigDecimal("2000.00"));
+        var another = new Account("Maria Costa", new BigDecimal("2000.00"));
         another.setId(UUID.randomUUID());
-        PageRequest pageable = PageRequest.of(0, 20);
-        PageImpl<Account> accountPage = new PageImpl<>(List.of(account, another), pageable, 2);
-        PaginatedResponse<AccountResponse> paginatedResponse = new PaginatedResponse<>(
+        var pageable = PageRequest.of(0, 20);
+        var accountPage = new PageImpl<>(List.of(account, another), pageable, 2);
+        var paginatedResponse = new PaginatedResponse<>(
                 List.of(
                         new AccountResponse(account.getId(), account.getName(), account.getBalance()),
                         new AccountResponse(another.getId(), another.getName(), another.getBalance())
@@ -128,7 +128,7 @@ class AccountServiceTest {
         when(pageMapper.toPaginatedResponse(org.mockito.ArgumentMatchers.<Page<AccountResponse>>any()))
                 .thenReturn(paginatedResponse);
 
-        PaginatedResponse<AccountResponse> responses = accountService.findAll(0, 20);
+        var responses = accountService.findAll(0, 20);
 
         assertThat(responses.totalElements()).isEqualTo(2);
         assertThat(responses.content()).hasSize(2);
@@ -138,10 +138,10 @@ class AccountServiceTest {
 
     @Test
     void shouldDelegateStatementLookupToTransferService() {
-        PaginatedResponse<TransactionResponse> statementResponse = new PaginatedResponse<>(List.of(), 0, 0, 0, 0, 20);
+        var statementResponse = new PaginatedResponse<TransactionResponse>(List.of(), 0, 0, 0, 0, 20);
         when(transactionService.getTransactionByAccountId(accountId, 0, 20)).thenReturn(statementResponse);
 
-        PaginatedResponse<TransactionResponse> statement = accountService.getTransactionByAccountId(accountId, 0, 20);
+        var statement = accountService.getTransactionByAccountId(accountId, 0, 20);
 
         assertThat(statement).isSameAs(statementResponse);
         verify(transactionService).getTransactionByAccountId(accountId, 0, 20);
@@ -151,7 +151,7 @@ class AccountServiceTest {
     void shouldDelegateExistsByIdToRepository() {
         when(accountRepository.existsById(accountId)).thenReturn(true);
 
-        boolean exists = accountService.existsById(accountId);
+        var exists = accountService.existsById(accountId);
 
         assertThat(exists).isTrue();
         verify(accountRepository).existsById(accountId);

@@ -1,7 +1,6 @@
 package com.renner.bank.mapper;
 
 import com.renner.bank.domain.Account;
-import com.renner.bank.dto.AccountResponse;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -15,11 +14,11 @@ class AccountMapperTest {
 
     @Test
     void shouldMapAccountToResponse() {
-        UUID accountId = UUID.randomUUID();
-        Account account = new Account("João Silva", new BigDecimal("1000.00"));
+        var accountId = UUID.randomUUID();
+        var account = new Account("João Silva", new BigDecimal("1000.00"));
         account.setId(accountId);
 
-        AccountResponse response = accountMapper.toResponse(account);
+        var response = accountMapper.toResponse(account);
 
         assertThat(response.id()).isEqualTo(accountId);
         assertThat(response.name()).isEqualTo("João Silva");

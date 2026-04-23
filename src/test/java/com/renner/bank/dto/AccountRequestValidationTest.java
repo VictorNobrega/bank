@@ -2,13 +2,11 @@ package com.renner.bank.dto;
 
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
-import jakarta.validation.ValidatorFactory;
 import jakarta.validation.ConstraintViolation;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
-import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -18,15 +16,15 @@ class AccountRequestValidationTest {
 
     @BeforeAll
     static void setUp() {
-        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        var factory = Validation.buildDefaultValidatorFactory();
         validator = factory.getValidator();
     }
 
     @Test
     void shouldReturnCustomMessageWhenNameIsBlank() {
-        AccountRequest request = new AccountRequest(" ", new BigDecimal("100.00"));
+        var request = new AccountRequest(" ", new BigDecimal("100.00"));
 
-        Set<ConstraintViolation<AccountRequest>> violations = validator.validate(request);
+        var violations = validator.validate(request);
 
         assertThat(violations)
                 .extracting(ConstraintViolation::getMessage)
@@ -35,9 +33,9 @@ class AccountRequestValidationTest {
 
     @Test
     void shouldReturnCustomMessageWhenInitialBalanceIsNull() {
-        AccountRequest request = new AccountRequest("João Silva", null);
+        var request = new AccountRequest("João Silva", null);
 
-        Set<ConstraintViolation<AccountRequest>> violations = validator.validate(request);
+        var violations = validator.validate(request);
 
         assertThat(violations)
                 .extracting(ConstraintViolation::getMessage)
@@ -46,9 +44,9 @@ class AccountRequestValidationTest {
 
     @Test
     void shouldReturnCustomMessageWhenInitialBalanceIsNegative() {
-        AccountRequest request = new AccountRequest("João Silva", new BigDecimal("-0.01"));
+        var request = new AccountRequest("João Silva", new BigDecimal("-0.01"));
 
-        Set<ConstraintViolation<AccountRequest>> violations = validator.validate(request);
+        var violations = validator.validate(request);
 
         assertThat(violations)
                 .extracting(ConstraintViolation::getMessage)

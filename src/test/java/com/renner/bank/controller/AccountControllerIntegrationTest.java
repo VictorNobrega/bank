@@ -47,7 +47,7 @@ class AccountControllerIntegrationTest {
 
     @Test
     void shouldCreateAccountAndReturn201() throws Exception {
-        AccountRequest request = new AccountRequest("João Silva", new BigDecimal("1000.00"));
+        var request = new AccountRequest("João Silva", new BigDecimal("1000.00"));
 
         mockMvc.perform(post("/accounts")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -85,7 +85,7 @@ class AccountControllerIntegrationTest {
 
     @Test
     void shouldReturnAccountById() throws Exception {
-        Account account = accountRepository.save(new Account("Alice", new BigDecimal("500.00")));
+        var account = accountRepository.save(new Account("Alice", new BigDecimal("500.00")));
 
         mockMvc.perform(get("/accounts/{id}", account.getId()))
                 .andExpect(status().isOk())
@@ -96,7 +96,7 @@ class AccountControllerIntegrationTest {
 
     @Test
     void shouldReturn404WhenAccountDoesNotExist() throws Exception {
-        UUID randomId = UUID.randomUUID();
+        var randomId = UUID.randomUUID();
 
         mockMvc.perform(get("/accounts/{id}", randomId))
                 .andExpect(status().isNotFound())
@@ -105,8 +105,8 @@ class AccountControllerIntegrationTest {
 
     @Test
     void shouldReturnAccountStatement() throws Exception {
-        Account source = accountRepository.save(new Account("Alice", new BigDecimal("1000.00")));
-        Account destination = accountRepository.save(new Account("Bob", new BigDecimal("500.00")));
+        var source = accountRepository.save(new Account("Alice", new BigDecimal("1000.00")));
+        var destination = accountRepository.save(new Account("Bob", new BigDecimal("500.00")));
 
         mockMvc.perform(post("/transaction")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -123,7 +123,7 @@ class AccountControllerIntegrationTest {
 
     @Test
     void shouldReturn404WhenStatementAccountDoesNotExist() throws Exception {
-        UUID randomId = UUID.randomUUID();
+        var randomId = UUID.randomUUID();
 
         mockMvc.perform(get("/accounts/{id}/transaction", randomId))
                 .andExpect(status().isNotFound())

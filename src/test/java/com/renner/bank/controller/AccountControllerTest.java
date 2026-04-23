@@ -39,7 +39,7 @@ class AccountControllerTest {
 
     @BeforeEach
     void setUp() {
-        LocalValidatorFactoryBean validator = new LocalValidatorFactoryBean();
+        var validator = new LocalValidatorFactoryBean();
         validator.afterPropertiesSet();
 
         mockMvc = MockMvcBuilders.standaloneSetup(new AccountController(accountService))
@@ -51,9 +51,9 @@ class AccountControllerTest {
 
     @Test
     void shouldCreateAccount() throws Exception {
-        UUID accountId = UUID.randomUUID();
-        AccountRequest request = new AccountRequest("João Silva", new BigDecimal("1000.00"));
-        AccountResponse response = new AccountResponse(accountId, "João Silva", new BigDecimal("1000.00"));
+        var accountId = UUID.randomUUID();
+        var request = new AccountRequest("João Silva", new BigDecimal("1000.00"));
+        var response = new AccountResponse(accountId, "João Silva", new BigDecimal("1000.00"));
         when(accountService.create(request)).thenReturn(response);
 
         mockMvc.perform(post("/accounts")
@@ -83,7 +83,7 @@ class AccountControllerTest {
 
     @Test
     void shouldListAccounts() throws Exception {
-        PaginatedResponse<AccountResponse> response = new PaginatedResponse<>(
+        var response = new PaginatedResponse<>(
                 List.of(new AccountResponse(UUID.randomUUID(), "Alice", new BigDecimal("100.00"))),
                 1,
                 1,
@@ -101,7 +101,7 @@ class AccountControllerTest {
 
     @Test
     void shouldReturnAccountById() throws Exception {
-        UUID accountId = UUID.randomUUID();
+        var accountId = UUID.randomUUID();
         when(accountService.findById(accountId))
                 .thenReturn(new AccountResponse(accountId, "Alice", new BigDecimal("50.00")));
 
@@ -113,7 +113,7 @@ class AccountControllerTest {
 
     @Test
     void shouldReturnNotFoundWhenAccountDoesNotExist() throws Exception {
-        UUID accountId = UUID.randomUUID();
+        var accountId = UUID.randomUUID();
         when(accountService.findById(accountId)).thenThrow(new AccountNotFoundException(accountId));
 
         mockMvc.perform(get("/accounts/{id}", accountId))
@@ -123,8 +123,8 @@ class AccountControllerTest {
 
     @Test
     void shouldReturnStatement() throws Exception {
-        UUID accountId = UUID.randomUUID();
-        PaginatedResponse<TransactionResponse> response = new PaginatedResponse<>(
+        var accountId = UUID.randomUUID();
+        var response = new PaginatedResponse<>(
                 List.of(new TransactionResponse(
                         UUID.randomUUID(),
                         accountId,
@@ -151,7 +151,7 @@ class AccountControllerTest {
 
     @Test
     void shouldReturnNotFoundWhenStatementAccountDoesNotExist() throws Exception {
-        UUID accountId = UUID.randomUUID();
+        var accountId = UUID.randomUUID();
         when(accountService.getTransactionByAccountId(accountId, 0, 20)).thenThrow(new AccountNotFoundException(accountId));
 
         mockMvc.perform(get("/accounts/{id}/transaction", accountId))

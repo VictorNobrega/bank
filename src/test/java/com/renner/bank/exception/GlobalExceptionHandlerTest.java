@@ -2,7 +2,6 @@ package com.renner.bank.exception;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ProblemDetail;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
@@ -18,9 +17,9 @@ class GlobalExceptionHandlerTest {
 
     @Test
     void shouldHandleAccountNotFound() {
-        UUID accountId = UUID.randomUUID();
+        var accountId = UUID.randomUUID();
 
-        ProblemDetail problem = handler.handleAccountNotFound(new AccountNotFoundException(accountId));
+        var problem = handler.handleAccountNotFound(new AccountNotFoundException(accountId));
 
         assertThat(problem.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
         assertThat(problem.getDetail()).contains(accountId.toString());
@@ -28,9 +27,9 @@ class GlobalExceptionHandlerTest {
 
     @Test
     void shouldHandleTransferNotFound() {
-        UUID transferId = UUID.randomUUID();
+        var transferId = UUID.randomUUID();
 
-        ProblemDetail problem = handler.handleTransferNotFound(new TransferNotFoundException(transferId));
+        var problem = handler.handleTransferNotFound(new TransferNotFoundException(transferId));
 
         assertThat(problem.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
         assertThat(problem.getDetail()).contains(transferId.toString());
@@ -38,9 +37,9 @@ class GlobalExceptionHandlerTest {
 
     @Test
     void shouldHandleInsufficientFunds() {
-        UUID accountId = UUID.randomUUID();
+        var accountId = UUID.randomUUID();
 
-        ProblemDetail problem = handler.handleInsufficientFunds(
+        var problem = handler.handleInsufficientFunds(
                 new InsufficientFundsException(accountId, new BigDecimal("10.00"), new BigDecimal("20.00"))
         );
 
@@ -50,7 +49,7 @@ class GlobalExceptionHandlerTest {
 
     @Test
     void shouldHandleTransferToSameAccount() {
-        ProblemDetail problem = handler.handleSameAccount(new TransferToSameAccountException());
+        var problem = handler.handleSameAccount(new TransferToSameAccountException());
 
         assertThat(problem.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
         assertThat(problem.getDetail()).isEqualTo("Source and destination accounts must be different");
@@ -58,11 +57,11 @@ class GlobalExceptionHandlerTest {
 
     @Test
     void shouldBuildValidationProblemFromBindException() {
-        BeanPropertyBindingResult bindingResult = new BeanPropertyBindingResult(new Object(), "request");
+        var bindingResult = new BeanPropertyBindingResult(new Object(), "request");
         bindingResult.addError(new FieldError("request", "name", "Nome é obrigatório"));
         bindingResult.addError(new FieldError("request", "amount", null));
 
-        ProblemDetail problem = handler.handleBindValidation(new BindException(bindingResult));
+        var problem = handler.handleBindValidation(new BindException(bindingResult));
 
         assertThat(problem.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
         assertThat(problem.getDetail()).isEqualTo("Validation failed");

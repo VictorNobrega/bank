@@ -38,7 +38,7 @@ class TransactionControllerTest {
 
     @BeforeEach
     void setUp() {
-        LocalValidatorFactoryBean validator = new LocalValidatorFactoryBean();
+        var validator = new LocalValidatorFactoryBean();
         validator.afterPropertiesSet();
 
         mockMvc = MockMvcBuilders.standaloneSetup(new TransactionController(transactionService))
@@ -50,11 +50,11 @@ class TransactionControllerTest {
 
     @Test
     void shouldCreateTransfer() throws Exception {
-        UUID sourceId = UUID.randomUUID();
-        UUID destinationId = UUID.randomUUID();
-        UUID transactionId = UUID.randomUUID();
-        TransferRequest request = new TransferRequest(sourceId, destinationId, new BigDecimal("100.00"));
-        TransactionResponse response = new TransactionResponse(
+        var sourceId = UUID.randomUUID();
+        var destinationId = UUID.randomUUID();
+        var transactionId = UUID.randomUUID();
+        var request = new TransferRequest(sourceId, destinationId, new BigDecimal("100.00"));
+        var response = new TransactionResponse(
                 transactionId,
                 sourceId,
                 "Alice",
@@ -94,8 +94,8 @@ class TransactionControllerTest {
 
     @Test
     void shouldReturnBadRequestWhenTransferIsToSameAccount() throws Exception {
-        UUID accountId = UUID.randomUUID();
-        TransferRequest request = new TransferRequest(accountId, accountId, new BigDecimal("100.00"));
+        var accountId = UUID.randomUUID();
+        var request = new TransferRequest(accountId, accountId, new BigDecimal("100.00"));
         when(transactionService.transfer(request)).thenThrow(new TransferToSameAccountException());
 
         mockMvc.perform(post("/transaction")
@@ -107,9 +107,9 @@ class TransactionControllerTest {
 
     @Test
     void shouldReturnUnprocessableEntityWhenBalanceIsInsufficient() throws Exception {
-        UUID sourceId = UUID.randomUUID();
-        UUID destinationId = UUID.randomUUID();
-        TransferRequest request = new TransferRequest(sourceId, destinationId, new BigDecimal("100.00"));
+        var sourceId = UUID.randomUUID();
+        var destinationId = UUID.randomUUID();
+        var request = new TransferRequest(sourceId, destinationId, new BigDecimal("100.00"));
         when(transactionService.transfer(request))
                 .thenThrow(new InsufficientFundsException(sourceId, new BigDecimal("10.00"), new BigDecimal("100.00")));
 
@@ -122,10 +122,10 @@ class TransactionControllerTest {
 
     @Test
     void shouldReturnTransferById() throws Exception {
-        UUID sourceId = UUID.randomUUID();
-        UUID destinationId = UUID.randomUUID();
-        UUID transactionId = UUID.randomUUID();
-        TransactionResponse response = new TransactionResponse(
+        var sourceId = UUID.randomUUID();
+        var destinationId = UUID.randomUUID();
+        var transactionId = UUID.randomUUID();
+        var response = new TransactionResponse(
                 transactionId,
                 sourceId,
                 "Alice",
@@ -146,7 +146,7 @@ class TransactionControllerTest {
 
     @Test
     void shouldReturnNotFoundWhenTransferDoesNotExist() throws Exception {
-        UUID transactionId = UUID.randomUUID();
+        var transactionId = UUID.randomUUID();
         when(transactionService.findById(transactionId)).thenThrow(new TransferNotFoundException(transactionId));
 
         mockMvc.perform(get("/transaction/{id}", transactionId))

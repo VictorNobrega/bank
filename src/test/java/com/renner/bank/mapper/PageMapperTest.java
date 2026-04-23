@@ -1,6 +1,5 @@
 package com.renner.bank.mapper;
 
-import com.renner.bank.dto.pagination.PaginatedResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -23,10 +22,10 @@ class PageMapperTest {
 
     @Test
     void shouldConvertPageToPaginatedResponse() {
-        PageRequest pageable = PageRequest.of(1, 2);
-        PageImpl<String> page = new PageImpl<>(List.of("a", "b"), pageable, 5);
+        var pageable = PageRequest.of(1, 2);
+        var page = new PageImpl<>(List.of("a", "b"), pageable, 5);
 
-        PaginatedResponse<String> response = pageMapper.toPaginatedResponse(page);
+        var response = pageMapper.toPaginatedResponse(page);
 
         assertThat(response.content()).containsExactly("a", "b");
         assertThat(response.totalElements()).isEqualTo(5);
