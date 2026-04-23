@@ -22,5 +22,14 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID> 
                     SELECT COUNT(t) FROM Transaction t
                     WHERE t.source.id = :accountId OR t.destination.id = :accountId
                     """)
-    Page<Transaction> findByAccountId(UUID accountId, Pageable pageable);
+    Page<Transaction> findByAccountId(@Param("accountId") UUID accountId, Pageable pageable);
+
+    @Query(value = """
+            SELECT t FROM Transaction t
+            JOIN FETCH t.source
+            JOIN FETCH t.destination
+            ORDER BY t.createdAt DESC
+            """,
+            countQuery = "SELECT COUNT(t) FROM Transaction t")
+    Page<Transaction> findAllWithAccounts(Pageable pageable);
 }

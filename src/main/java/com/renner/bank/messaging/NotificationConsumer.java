@@ -36,8 +36,9 @@ public class NotificationConsumer {
             log.info("[NOTIFICATION] Transfer of R${} from {} to {} notified successfully",
                     payload.amount(), payload.sourceName(), payload.destinationName());
         } catch (RestClientException e) {
-            log.error("[NOTIFICATION] Failed to notify transfer of {} from {} to {}: {}",
+            log.error("[NOTIFICATION] Failed to notify transfer of {} from {} to {}: {}. Routing to DLQ.",
                     payload.amount(), payload.sourceName(), payload.destinationName(), e.getMessage());
+            throw e;
         }
     }
 }

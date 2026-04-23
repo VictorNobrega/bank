@@ -69,6 +69,13 @@ public class TransactionService {
         return pageMapper.toPaginatedResponse(statementPage);
     }
 
+    public PaginatedResponse<TransactionResponse> findAll(Integer page, Integer size) {
+        var pageable = pageMapper.buildPagination(page, size);
+        var transactionPage = transactionRepository.findAllWithAccounts(pageable)
+                .map(transactionMapper::toResponse);
+        return pageMapper.toPaginatedResponse(transactionPage);
+    }
+
     public TransactionResponse findById(UUID transferId) {
         return transactionRepository.findById(transferId)
                 .map(transactionMapper::toResponse)
@@ -87,8 +94,9 @@ public class TransactionService {
         try {
             validateDistinctAccounts(sourceId, destinationId);
 
-            source = findAccountWithLock(sourceId);
-            destination = findAccountWithLock(destinationId);
+            var locked = findAccountsWithOrderedLocks(sourceId, destinationId);
+            source = locked[0];
+            destination = locked[1];
 
             applyFundsTransfer(source, destination, request.amount());
 
@@ -156,7 +164,14 @@ public class TransactionService {
         });
     }
 
-    private Account findAccountWithLock(UUID sourceId) {
-        return accountService.findByIdWithLock(sourceId);
+    private Account[] findAccountsWithOrderedLocks(UUID sourceId, UUID destinationId) {
+        if (sourceId.compareTo(destinationId) < 0) {
+            var first = accountService.findByIdWithLock(sourceId);
+            var second = accountService.findByIdWithLock(destinationId);
+            return new Account[]{first, second};
+        }
+        var first = accountService.findByIdWithLock(destinationId);
+        var second = accountService.findByIdWithLock(sourceId);
+        return new Account[]{second, first};
     }
 }

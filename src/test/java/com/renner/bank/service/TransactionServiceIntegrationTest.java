@@ -17,7 +17,12 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -134,5 +139,55 @@ class TransactionServiceIntegrationTest {
         assertThatThrownBy(() -> transactionService.findById(randomId))
                 .isInstanceOf(TransferNotFoundException.class)
                 .hasMessageContaining(randomId.toString());
+    }
+
+    @Test
+    void shouldHandleConcurrentTransfersWithoutDeadlock() throws InterruptedException {
+        var threads = 20;
+        var executor = Executors.newFixedThreadPool(threads);
+        var latch = new CountDownLatch(threads);
+        var unexpectedErrors = Collections.synchronizedList(new ArrayList<Exception>());
+
+        var initialTotal = source.getBalance().add(destination.getBalance());
+
+        for (int i = 0; i < threads / 2; i++) {
+            executor.submit(() -> {
+                try {
+                    transactionService.transfer(
+                            new TransferRequest(source.getId(), destination.getId(), new BigDecimal("10.00")));
+                } catch (InsufficientFundsException ignored) {
+                    // expected under contention
+                } catch (Exception e) {
+                    unexpectedErrors.add(e);
+                } finally {
+                    latch.countDown();
+                }
+            });
+            executor.submit(() -> {
+                try {
+                    transactionService.transfer(
+                            new TransferRequest(destination.getId(), source.getId(), new BigDecimal("10.00")));
+                } catch (InsufficientFundsException ignored) {
+                    // expected under contention
+                } catch (Exception e) {
+                    unexpectedErrors.add(e);
+                } finally {
+                    latch.countDown();
+                }
+            });
+        }
+
+        assertThat(latch.await(30, TimeUnit.SECONDS)).isTrue();
+        executor.shutdown();
+
+        assertThat(unexpectedErrors)
+                .as("No deadlocks or unexpected errors should occur")
+                .isEmpty();
+
+        var updatedSource = accountRepository.findById(source.getId()).orElseThrow();
+        var updatedDest = accountRepository.findById(destination.getId()).orElseThrow();
+        assertThat(updatedSource.getBalance().add(updatedDest.getBalance()))
+                .as("Total funds must be conserved across all concurrent transfers")
+                .isEqualByComparingTo(initialTotal);
     }
 }

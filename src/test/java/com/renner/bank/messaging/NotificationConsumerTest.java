@@ -11,6 +11,8 @@ import org.springframework.web.client.RestClient;
 import java.math.BigDecimal;
 import java.util.UUID;
 
+import org.springframework.web.client.RestClientException;
+
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
@@ -51,12 +53,13 @@ class NotificationConsumerTest {
     }
 
     @Test
-    void shouldNotPropagateExceptionWhenHttpCallFails() {
+    void shouldPropagateExceptionWhenHttpCallFailsSoMessageRoutesToDlq() {
         server.expect(requestTo(NOTIFICATION_URL))
                 .andRespond(withServerError());
 
         var payload = new NotificationRequest(sourceId, "Alice", destinationId, "Bob", amount);
 
-        assertThatCode(() -> notificationConsumer.consume(payload)).doesNotThrowAnyException();
+        assertThatCode(() -> notificationConsumer.consume(payload))
+                .isInstanceOf(RestClientException.class);
     }
 }
