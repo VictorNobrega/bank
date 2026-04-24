@@ -31,9 +31,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -146,8 +150,8 @@ class TransactionServiceTest {
         );
 
         when(accountService.existsById(sourceId)).thenReturn(true);
-        when(pageMapper.buildPagination(0, 20)).thenReturn(pageable);
-        when(transactionRepository.findByAccountId(sourceId, pageable)).thenReturn(page);
+        when(pageMapper.buildPagination(eq(0), eq(20), any(Sort.class))).thenReturn(pageable);
+        when(transactionRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(page);
         when(transactionMapper.toResponse(transaction)).thenReturn(mappedResponse);
         when(pageMapper.toPaginatedResponse(org.mockito.ArgumentMatchers.<Page<TransactionResponse>>any()))
                 .thenReturn(paginatedResponse);

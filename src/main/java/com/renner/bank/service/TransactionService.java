@@ -13,9 +13,11 @@ import com.renner.bank.exception.TransferToSameAccountException;
 import com.renner.bank.mapper.PageMapper;
 import com.renner.bank.mapper.TransactionMapper;
 import com.renner.bank.repository.TransactionRepository;
+import com.renner.bank.repository.TransactionSpecification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
@@ -63,15 +65,19 @@ public class TransactionService {
             throw new AccountNotFoundException(accountId);
         }
 
-        var pageable = pageMapper.buildPagination(page, size);
-        var statementPage = transactionRepository.findByAccountId(accountId, pageable)
+        var sort = Sort.by("createdAt").descending();
+        var pageable = pageMapper.buildPagination(page, size, sort);
+        var spec = TransactionSpecification.withEagerAccounts()
+                .and(TransactionSpecification.byAccountId(accountId));
+        var statementPage = transactionRepository.findAll(spec, pageable)
                 .map(transactionMapper::toResponse);
         return pageMapper.toPaginatedResponse(statementPage);
     }
 
     public PaginatedResponse<TransactionResponse> findAll(Integer page, Integer size) {
-        var pageable = pageMapper.buildPagination(page, size);
-        var transactionPage = transactionRepository.findAllWithAccounts(pageable)
+        var sort = Sort.by("createdAt").descending();
+        var pageable = pageMapper.buildPagination(page, size, sort);
+        var transactionPage = transactionRepository.findAll(TransactionSpecification.withEagerAccounts(), pageable)
                 .map(transactionMapper::toResponse);
         return pageMapper.toPaginatedResponse(transactionPage);
     }
@@ -86,7 +92,7 @@ public class TransactionService {
     public TransactionResponse transfer(TransferRequest request) {
         var sourceId = request.sourceAccountId();
         var destinationId = request.destinationAccountId();
-        Account source      = null;
+        Account source = null;
         Account destination = null;
 
         log.info("Transfer requested: {} -> {}, amount={}", sourceId, destinationId, request.amount());

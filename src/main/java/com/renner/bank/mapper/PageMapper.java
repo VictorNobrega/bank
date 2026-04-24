@@ -4,6 +4,7 @@ import com.renner.bank.dto.pagination.PaginatedResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -22,5 +23,9 @@ public class PageMapper {
 
     public Pageable buildPagination(Integer page, Integer size) {
         return PageRequest.of(page, size);
+    }
+
+    public Pageable buildPagination(Integer page, Integer size, Sort sort) {
+        return PageRequest.of(page, size, sort);
     }
 }
