@@ -135,6 +135,6 @@ class TransactionControllerIntegrationTest {
 
         mockMvc.perform(get("/transaction/{id}", randomId))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.detail").value("Transferência não encontrada para o id: " + randomId));
+                .andExpect(jsonPath("$.detail").value("Transfer not found for id: " + randomId));
     }
 }
