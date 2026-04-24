@@ -117,9 +117,9 @@ O método `transfer` foi estruturado como um **orquestrador** de etapas privadas
 - `persistCompletedTransaction` — persistência do registro e log
 - `notifyTransferParticipants` — disparo da notificação
 
-### Tratamento de erros padronizado (RFC 9457)
+### Tratamento de erros padronizado
 
-Todos os erros são retornados no formato `ProblemDetail` (RFC 9457), com `status`, `detail` e, em erros de validação, um campo `errors` com os campos inválidos e suas mensagens.
+Todos os erros são retornados no formato `ProblemDetail`, com `status`, `detail` e, em erros de validação, um campo `errors` com os campos inválidos e suas mensagens.
 
 ### Respostas paginadas
 
